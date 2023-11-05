@@ -5,16 +5,30 @@
 #include <cstdint>
 #include <thread>
 
-#define FL_ONGROUND (1 << 0)
-#define JUMP_WORD 65537
-#define GROUND_WORD 256
+// CONSTANTS
+constexpr auto FL_ONGROUND = (1 << 0);
+constexpr auto JUMP_FLAG = 65537;
+constexpr auto GROUND_FLAG = 256;
+
+// ON_GROUND 00000100
+// JUMP      0001XXX1
 
 namespace Offsets {
-	constexpr std::ptrdiff_t dwLocalPlayer = 0x1875C48;
-	constexpr std::ptrdiff_t dwForceJump = 0x1690100;
+	constexpr std::ptrdiff_t dwEntityList = 0x17995C0;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1886C48;
 
-	constexpr std::ptrdiff_t m_iHealth = 0x32c;
-	constexpr std::ptrdiff_t m_fFlags = 0x3c8;
+	// movement
+	constexpr std::ptrdiff_t dwForceBackward = 0x169F130;
+	constexpr std::ptrdiff_t dwForceForward = 0x169F0A0;
+	constexpr std::ptrdiff_t dwForceLeft = 0x169F1C0;
+	constexpr std::ptrdiff_t dwForceRight = 0x169F250;
+	constexpr std::ptrdiff_t dwForceJump = 0x169F370;
+	constexpr std::ptrdiff_t dwForceCrouch = 0x169F400;
+}
+
+namespace C_BaseEntity {
+	constexpr std::ptrdiff_t m_iHealth = 0x32C;
+	constexpr std::ptrdiff_t m_fFlags = 0x3C8;
 }
 
 // bunnies
@@ -27,21 +41,21 @@ void BHop(const HMODULE instance) noexcept {
 		if (!GetAsyncKeyState(VK_SPACE)) continue;
 
 		// set memory address for localPlayer
-		const auto localPlayer = *reinterpret_cast<std::uintptr_t*>(client + Offsets::dwLocalPlayer);
+		const auto localPlayer = *reinterpret_cast<std::uintptr_t*>(client + Offsets::dwLocalPlayerPawn);
 
 		if (!localPlayer) continue;
 
 		// check localPlayer is alive lol
-		const auto health = *reinterpret_cast<std::int32_t*>(localPlayer + Offsets::m_iHealth);
+		const auto health = *reinterpret_cast<std::int32_t*>(localPlayer + C_BaseEntity::m_iHealth);
 		if (!health) continue;
 
 		// check localPlayer flags
-		const auto flags = *reinterpret_cast<std::int32_t*>(localPlayer + Offsets::m_fFlags);
+		const auto flags = *reinterpret_cast<std::int32_t*>(localPlayer + C_BaseEntity::m_fFlags);
 
 		// check on ground
 		(flags & FL_ONGROUND) ?
-			*reinterpret_cast<std::uintptr_t*>(client + Offsets::dwForceJump) = JUMP_WORD :  // jump
-			*reinterpret_cast<std::uintptr_t*>(client + Offsets::dwForceJump) = GROUND_WORD;   // reset
+			*reinterpret_cast<std::uintptr_t*>(client + Offsets::dwForceJump) = JUMP_FLAG :  // jump
+			*reinterpret_cast<std::uintptr_t*>(client + Offsets::dwForceJump) = GROUND_FLAG;   // reset
 	}
 
 	FreeLibraryAndExitThread(instance, 0);
@@ -75,7 +89,3 @@ int __stdcall DllMain(
 
 	return 1;
 }
-
-
-
-
