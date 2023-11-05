@@ -77,7 +77,6 @@ void gui::WindowDestroy() noexcept {
 }
 
 bool gui::DirectXSetup() noexcept {
-
 }
 
 void gui::DirectXDestroy() noexcept{}
