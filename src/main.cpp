@@ -10,7 +10,7 @@ int __stdcall DllMain(
 	const void* reserved
 ) {
 	// dll process attach
-	if (reason == 1) {
+	if (reason == DLL_PROCESS_ATTACH) {
 		DisableThreadLibraryCalls(instance);
 
 		//our/ thread
